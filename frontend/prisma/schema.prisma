@@ -1,0 +1,46 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model BrandingMonitoring {
+  id        String   @id @default(cuid()) // Genera un ID único automáticamente
+  userId    String
+  brandName String
+  domain    String?
+  vipName   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt // Actualiza automáticamente cuando se modifica el registro
+}
+
+
+model User {
+  id        String   @id
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+}
+
+model UserApiLimit {
+  id        String   @id
+  userId    String   @unique
+  count     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+}
+
+model UserSubscription {
+  id                        String    @id
+  userId                    String    @unique
+  stripe_customer_id        String?   @unique
+  stripe_subscription_id    String?   @unique
+  stripe_price_id           String?
+  stripe_current_period_end DateTime?
+}

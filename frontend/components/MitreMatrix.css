@@ -1,0 +1,47 @@
+/* components/MitreMatrix.css */
+.mitre-matrix {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 20px 0;
+  }
+  
+  .tactic-column {
+    flex: 1;
+    min-width: 250px;
+    border: 1px solid #ddd;
+    margin: 0 5px;
+    background-color: #f7f7f7;
+    border-radius: 5px;
+  }
+  
+  .tactic-header {
+    background-color: #009879;
+    color: #ffffff;
+    text-align: center;
+    padding: 10px;
+    font-weight: bold;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+  }
+  
+  .technique-cell {
+    border-top: 1px solid #ddd;
+    padding: 10px;
+    background-color: #ffffff;
+    margin: 5px;
+    border-radius: 5px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    cursor: grab;
+  }
+  
+  .technique-name {
+    font-weight: bold;
+  }
+  
+  .technique-description {
+    font-size: 14px;
+    color: #555;
+  }
+  
+  

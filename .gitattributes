@@ -1,0 +1,1 @@
+backend/cti/conector/domains.txt filter=lfs diff=lfs merge=lfs -text

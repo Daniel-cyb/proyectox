@@ -1,0 +1,14 @@
+{
+    "name": "getopensearch",
+    "version": "1.0.0",
+    "description": "Servicio Node.js para consumir datos de OpenSearch",
+    "main": "index.js",
+    "scripts": {
+      "start": "node index.js"
+    },
+    "dependencies": {
+      "@opensearch-project/opensearch": "^2.0.0",
+      "express": "^4.17.1"
+    }
+  }
+  
