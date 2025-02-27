@@ -1,9 +1,15 @@
 import { useState } from 'react';
 
-export function useToast() {
-  const [toasts, setToasts] = useState([]);
+interface Toast {
+  id: string;
+  message: string;
+  type: 'success' | 'error';
+}
 
-  const addToast = (message, type = 'success') => {
+export function useToast() {
+  const [toasts, setToasts] = useState<Toast[]>([]);
+
+  const addToast = (message: string, type: 'success' | 'error' = 'success'): void => {
     const id = Math.random().toString(36).substring(7);
     setToasts([...toasts, { id, message, type }]);
 
@@ -19,7 +25,11 @@ export function useToast() {
   };
 }
 
-export function ToastContainer({ toasts }) {
+interface ToastContainerProps {
+  toasts: Toast[];
+}
+
+export function ToastContainer({ toasts }: ToastContainerProps) {
   return (
     <div className="fixed bottom-4 right-4 space-y-2">
       {toasts.map((toast) => (

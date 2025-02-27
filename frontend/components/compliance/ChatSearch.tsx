@@ -1,15 +1,14 @@
-"use client"; // Marca este componente como un Client Component
-
+"use client";
 import { useState } from "react";
 
 const ChatSearch = () => {
-  const [inputText, setInputText] = useState(""); // Estado para manejar el texto del input
-  const [chatHistory, setChatHistory] = useState([]); // Estado para manejar el historial de chat
-  const [loading, setLoading] = useState(false); // Estado de carga
-  const [error, setError] = useState(null); // Estado para manejar errores
+  const [inputText, setInputText] = useState("");
+  const [chatHistory, setChatHistory] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Función para manejar la entrada de texto
-  const handleInputChange = (e) => {
+  // Función para manejar la entrada de texto con el tipo correcto para el evento
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputText(e.target.value);
     setError(null); // Limpiar el error cuando se cambia el input
   };
@@ -64,11 +63,14 @@ const ChatSearch = () => {
 
       // Verificar si se obtuvieron resultados
       if (!data.results || data.results.length === 0) {
-        setChatHistory((prevChat) => [...prevChat, { sender: "bot", message: "No se encontraron resultados." }]);
+        setChatHistory((prevChat) => [
+          ...prevChat,
+          { sender: "bot", message: "No se encontraron resultados." },
+        ]);
       } else {
         // Agregar la respuesta del backend al historial de chat
         const resultMessage = data.results
-          .map((result) => `Documento: ${result.document}, Relevancia: ${result.score}`)
+          .map((result: any) => `Documento: ${result.document}, Relevancia: ${result.score}`)
           .join("\n");
 
         setChatHistory((prevChat) => [...prevChat, { sender: "bot", message: resultMessage }]);
@@ -78,7 +80,10 @@ const ChatSearch = () => {
       setInputText("");
     } catch (error) {
       console.error("Error al buscar en el chat:", error);
-      setChatHistory((prevChat) => [...prevChat, { sender: "bot", message: "Error al obtener respuesta." }]);
+      setChatHistory((prevChat) => [
+        ...prevChat,
+        { sender: "bot", message: "Error al obtener respuesta." },
+      ]);
     } finally {
       setLoading(false);
     }
@@ -91,8 +96,15 @@ const ChatSearch = () => {
       <div className="chat-window mb-4 h-64 overflow-y-scroll bg-gray-100 p-4 border rounded">
         {/* Mostrar el historial del chat */}
         {chatHistory.map((chat, index) => (
-          <div key={index} className={`mb-2 ${chat.sender === "user" ? "text-right" : "text-left"}`}>
-            <span className={`inline-block px-4 py-2 rounded-lg ${chat.sender === "user" ? "bg-blue-500 text-white" : "bg-gray-200"}`}>
+          <div
+            key={index}
+            className={`mb-2 ${chat.sender === "user" ? "text-right" : "text-left"}`}
+          >
+            <span
+              className={`inline-block px-4 py-2 rounded-lg ${
+                chat.sender === "user" ? "bg-blue-500 text-white" : "bg-gray-200"
+              }`}
+            >
               {chat.message}
             </span>
           </div>

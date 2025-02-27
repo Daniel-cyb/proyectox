@@ -1,10 +1,17 @@
 import React, { useState } from 'react';
 
-export const Slider = ({ min, max, value, onChange }) => {
-  const [sliderValue, setSliderValue] = useState(value);
+interface SliderProps {
+  min: number;
+  max: number;
+  value: number;
+  onChange: (newValue: number) => void;
+}
 
-  const handleChange = (event) => {
-    const newValue = event.target.value;
+export const Slider: React.FC<SliderProps> = ({ min, max, value, onChange }) => {
+  const [sliderValue, setSliderValue] = useState<number>(value);
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = Number(event.target.value);
     setSliderValue(newValue);
     onChange(newValue);
   };

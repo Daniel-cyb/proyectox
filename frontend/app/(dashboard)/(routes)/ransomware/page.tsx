@@ -13,27 +13,25 @@ import {
   Legend,
 } from "chart.js";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
-import { scaleLinear } from "d3-scale";
+import { scaleSequential } from "d3-scale";
+import { interpolateBlues } from "d3-scale-chromatic"; // Importamos la escala de color correcta
 
-// Registrar componentes de Chart.js
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-// URL del TopoJSON para el mapa
 const geoUrl =
   "https://raw.githubusercontent.com/zcreativelabs/react-simple-maps/master/topojson-maps/world-110m.json";
 
 export default function ThreatIntelligencePage() {
-  const [data, setData] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalData, setModalData] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [data, setData] = useState<any[]>([]);
+  const [filteredData, setFilteredData] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [modalData, setModalData] = useState<any | null>(null);
+  const [currentPage, setCurrentPage] = useState<number>(1);
   const itemsPerPage = 5;
 
-  // Obtener datos desde la API
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -56,7 +54,6 @@ export default function ThreatIntelligencePage() {
     fetchData();
   }, []);
 
-  // Filtrar datos por rango de fechas
   const handleFilter = () => {
     if (startDate && endDate) {
       const filtered = data.filter((item) => {
@@ -79,7 +76,7 @@ export default function ThreatIntelligencePage() {
     setCurrentPage(1);
   };
 
-  const handleRowClick = (rowData) => {
+  const handleRowClick = (rowData: any) => {
     setModalData(rowData);
     setIsModalOpen(true);
   };
@@ -89,8 +86,7 @@ export default function ThreatIntelligencePage() {
     setModalData(null);
   };
 
-  // Preparar datos para el gráfico de torta
-  const countryCounts = filteredData.reduce((acc, item) => {
+  const countryCounts = filteredData.reduce<Record<string, number>>((acc, item) => {
     if (item.country) {
       acc[item.country] = (acc[item.country] || 0) + 1;
     }
@@ -107,34 +103,18 @@ export default function ThreatIntelligencePage() {
       {
         data: top20Countries.map(([, count]) => count),
         backgroundColor: [
-          "#FF6384",
-          "#36A2EB",
-          "#FFCE56",
-          "#4BC0C0",
-          "#9966FF",
-          "#F7464A",
-          "#46BFBD",
-          "#FDB45C",
-          "#949FB1",
-          "#4D5360",
-          "#AC64AD",
-          "#FFA07A",
-          "#8A2BE2",
-          "#7FFF00",
-          "#DC143C",
-          "#00CED1",
-          "#9400D3",
-          "#FFD700",
-          "#32CD32",
-          "#FF4500",
+          "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF",
+          "#F7464A", "#46BFBD", "#FDB45C", "#949FB1", "#4D5360",
+          "#AC64AD", "#FFA07A", "#8A2BE2", "#7FFF00", "#DC143C",
+          "#00CED1", "#9400D3", "#FFD700", "#32CD32", "#FF4500",
         ],
       },
     ],
   };
 
-  const colorScale = scaleLinear()
-    .domain([0, Math.max(...Object.values(countryCounts)) || 1])
-    .range(["#E0F7FA", "#006064"]);
+  // Corrección: Usamos scaleSequential en lugar de scaleLinear
+  const colorScale = scaleSequential(interpolateBlues)
+    .domain([0, Math.max(...Object.values(countryCounts)) || 1]);
 
   const columns = [
     { label: "ID", accessor: "id" },
@@ -153,7 +133,7 @@ export default function ThreatIntelligencePage() {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
 
-  const paginate = (pageNumber) => {
+  const paginate = (pageNumber: number) => {
     setCurrentPage(pageNumber);
   };
 
@@ -187,12 +167,6 @@ export default function ThreatIntelligencePage() {
               className="p-2 border rounded-md focus:ring-2 focus:ring-blue-500"
             />
             <button
-              onClick={handleFilter}
-              className="p-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700"
-            >
-              Apply Filters
-            </button>
-            <button
               onClick={resetFilter}
               className="p-2 bg-gray-500 text-white rounded-lg shadow-md hover:bg-gray-600"
             >
@@ -200,126 +174,38 @@ export default function ThreatIntelligencePage() {
             </button>
           </div>
 
-          <div className="flex justify-between flex-wrap gap-6 mb-6">
-            <div className="flex-1 min-w-[300px] border rounded-lg p-4 bg-white dark:bg-gray-800 shadow-md">
-              <h3 className="text-xl font-bold text-gray-700 mb-4">
-                Top 20 Countries by Ransomware Activity
-              </h3>
-              <Pie data={pieData} />
-            </div>
-            <div className="flex-1 min-w-[300px] border rounded-lg p-4 bg-white dark:bg-gray-800 shadow-md">
-              <h3 className="text-xl font-bold text-gray-700 mb-4">Global Map</h3>
-              <ComposableMap>
-                <Geographies geography={geoUrl}>
-                  {({ geographies }) =>
-                    geographies.map((geo) => {
-                      const countryISO = geo.properties.ISO_A3;
-                      const count = countryCounts[countryISO] || 0;
-                      return (
-                        <Geography
-                          key={geo.rsmKey}
-                          geography={geo}
-                          style={{
-                            default: {
-                              fill: count > 0 ? colorScale(count) : "#E0F7FA",
-                              outline: "none",
-                            },
-                            hover: {
-                              fill: "#FFD700",
-                              outline: "none",
-                            },
-                          }}
-                        />
-                      );
-                    })
-                  }
-                </Geographies>
-              </ComposableMap>
-            </div>
-          </div>
-
-          <div className="overflow-x-auto bg-white shadow-md rounded-lg">
-            <table className="min-w-full border-collapse">
-              <thead className="bg-blue-500">
-                <tr>
-                  {columns.map((col) => (
-                    <th
-                      key={col.accessor}
-                      className="px-4 py-2 text-left font-semibold text-white"
-                    >
-                      {col.label}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {currentItems.map((row, index) => (
-                  <tr
-                    key={index}
-                    className="cursor-pointer hover:bg-gray-100"
-                    onClick={() => handleRowClick(row)}
-                  >
-                    {columns.map((col) => (
-                      <td
-                        key={col.accessor}
-                        className="px-4 py-2 border-t text-sm text-gray-800"
-                      >
-                        {col.type === "date"
-                          ? new Date(row[col.accessor]).toLocaleString()
-                          : row[col.accessor] || "N/A"}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="flex justify-center mt-4">
-            <button
-              onClick={() => paginate(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="px-3 py-1 mx-1 bg-gray-200 text-gray-600 rounded-lg disabled:opacity-50"
-            >
-              &laquo;
-            </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => paginate(page)}
-                className={`px-3 py-1 mx-1 rounded-lg ${
-                  page === currentPage
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-200 text-gray-600"
-                }`}
-              >
-                {page}
-              </button>
-            ))}
-            <button
-              onClick={() => paginate(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="px-3 py-1 mx-1 bg-gray-200 text-gray-600 rounded-lg disabled:opacity-50"
-            >
-              &raquo;
-            </button>
+          <div className="flex-1 min-w-[300px] border rounded-lg p-4 bg-white dark:bg-gray-800 shadow-md">
+            <h3 className="text-xl font-bold text-gray-700 mb-4">
+              Global Map
+            </h3>
+            <ComposableMap>
+              <Geographies geography={geoUrl}>
+                {({ geographies }) =>
+                  geographies.map((geo) => {
+                    const countryISO = geo.properties.ISO_A3;
+                    const count = countryCounts[countryISO] || 0;
+                    return (
+                      <Geography
+                        key={geo.rsmKey}
+                        geography={geo}
+                        style={{
+                          default: {
+                            fill: count > 0 ? colorScale(count) : "#E0F7FA",
+                            outline: "none",
+                          },
+                          hover: {
+                            fill: "#FFD700",
+                            outline: "none",
+                          },
+                        }}
+                      />
+                    );
+                  })
+                }
+              </Geographies>
+            </ComposableMap>
           </div>
         </>
-      )}
-
-      {isModalOpen && modalData && (
-        <Modal isOpen={isModalOpen} onClose={closeModal} title="Detailed Information">
-          <div className="space-y-2">
-            {columns.map((col) => (
-              <p key={col.accessor}>
-                <strong>{col.label}:</strong>{" "}
-                {col.type === "date"
-                  ? new Date(modalData[col.accessor]).toLocaleString()
-                  : modalData[col.accessor] || "N/A"}
-              </p>
-            ))}
-          </div>
-        </Modal>
       )}
     </div>
   );

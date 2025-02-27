@@ -9,7 +9,7 @@ import { Sidebar } from "@/components/sidebar";
 
 export const MobileSidebar = ({
   apiLimitCount = 0,
-  isPro = false
+  isPro = false,
 }: {
   apiLimitCount: number;
   isPro: boolean;
@@ -32,7 +32,12 @@ export const MobileSidebar = ({
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-72 p-0">
-        <Sidebar isPro={isPro} apiLimitCount={apiLimitCount} />
+        <Sidebar
+          isPro={isPro}
+          apiLimitCount={apiLimitCount}
+          isSidebarOpen={true}
+          onToggle={() => {}} // Se añade la propiedad onToggle
+        />
       </SheetContent>
     </Sheet>
   );

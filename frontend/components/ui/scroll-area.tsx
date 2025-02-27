@@ -1,10 +1,14 @@
 import React from 'react';
 
-export const ScrollArea = ({ children, className }) => {
+interface ScrollAreaProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export const ScrollArea: React.FC<ScrollAreaProps> = ({ children, className }) => {
   return (
     <div className={`overflow-y-auto ${className}`} style={{ maxHeight: '300px' }}>
       {children}
     </div>
   );
 };
-

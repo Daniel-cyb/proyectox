@@ -29,16 +29,16 @@ export async function POST(req: Request) {
     )
 
     if (!session?.metadata?.userId) {
-      return new NextResponse("User id is required", { status: 400 });
+      return new NextResponse("User id is required", { status: 400 })
     }
 
     await prismadb.userSubscription.create({
       data: {
-        userId: session?.metadata?.userId,
-        stripeSubscriptionId: subscription.id,
-        stripeCustomerId: subscription.customer as string,
-        stripePriceId: subscription.items.data[0].price.id,
-        stripeCurrentPeriodEnd: new Date(
+        userId: session.metadata.userId,
+        stripe_subscription_id: subscription.id,
+        stripe_customer_id: subscription.customer as string,
+        stripe_price_id: subscription.items.data[0].price.id,
+        stripe_current_period_end: new Date(
           subscription.current_period_end * 1000
         ),
       },
@@ -52,11 +52,11 @@ export async function POST(req: Request) {
 
     await prismadb.userSubscription.update({
       where: {
-        stripeSubscriptionId: subscription.id,
+        stripe_subscription_id: subscription.id,
       },
       data: {
-        stripePriceId: subscription.items.data[0].price.id,
-        stripeCurrentPeriodEnd: new Date(
+        stripe_price_id: subscription.items.data[0].price.id,
+        stripe_current_period_end: new Date(
           subscription.current_period_end * 1000
         ),
       },
@@ -64,4 +64,4 @@ export async function POST(req: Request) {
   }
 
   return new NextResponse(null, { status: 200 })
-};
+}

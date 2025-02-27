@@ -6,9 +6,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { username } = req.body;
 
     try {
-      const newBrand = await prismadb.brandMonitoring.create({
+      const newBrand = await prismadb.brandingMonitoring.create({
         data: {
-          name: username,
+          brandName: username, // Mapea el nombre de la marca a la propiedad correcta
           domain: '', // Asigna un valor si tienes un dominio asociado
           userId: 'user-id-example', // Reemplaza con el ID del usuario adecuado
         },

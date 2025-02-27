@@ -1,11 +1,10 @@
-"use client";  // Marca este componente como un Client Component
+"use client"; // Marca este componente como un Client Component
 
 import { useState } from 'react';
 import { Bot } from "lucide-react";
 import { Heading } from "@/components/heading";
 import { Loader } from "@/components/loader";
-import Compliance from "@/components/compliance/compliance";
-
+import Compliance from "@/components/compliance/Compliance"; // Asegúrate de que el nombre del archivo coincida exactamente con esta importación
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(false);
@@ -30,8 +29,6 @@ const Dashboard = () => {
             <div className="mb-8">
               <Compliance /> {/* Renderiza el módulo de ISO 27001 */}
             </div>
-            
-
           </div>
         )}
       </div>

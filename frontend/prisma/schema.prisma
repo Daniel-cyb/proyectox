@@ -10,15 +10,14 @@ datasource db {
 }
 
 model BrandingMonitoring {
-  id        String   @id @default(cuid()) // Genera un ID único automáticamente
+  id        String   @id @default(cuid())
   userId    String
   brandName String
   domain    String?
   vipName   String?
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt // Actualiza automáticamente cuando se modifica el registro
+  updatedAt DateTime @updatedAt
 }
-
 
 model User {
   id        String   @id
@@ -26,21 +25,30 @@ model User {
   name      String?
   createdAt DateTime @default(now())
   updatedAt DateTime
+
+  // Relaciones opcionales
+  subscription UserSubscription?
+  apiLimit     UserApiLimit?
 }
 
 model UserApiLimit {
-  id        String   @id
+  id        String   @id @default(cuid())
   userId    String   @unique
   count     Int      @default(0)
   createdAt DateTime @default(now())
-  updatedAt DateTime
+  updatedAt DateTime @updatedAt
+
+  // Relación con User (corregida, dentro del modelo)
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model UserSubscription {
-  id                        String    @id
-  userId                    String    @unique
-  stripe_customer_id        String?   @unique
   stripe_subscription_id    String?   @unique
+  stripe_customer_id        String?   @unique
   stripe_price_id           String?
   stripe_current_period_end DateTime?
+  userId                    String    @unique // Necesario para la relación 1:1
+
+  // Relación con User (corregida, dentro del modelo)
+  user                      User      @relation(fields: [userId], references: [id])
 }

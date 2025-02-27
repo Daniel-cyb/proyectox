@@ -1,20 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-const CustomTable = ({ apiUrl, columns, searchKey }) => {
-  const [data, setData] = useState([]); // Estado para almacenar los datos originales
-  const [filteredData, setFilteredData] = useState([]); // Estado para almacenar los datos filtrados
+interface Column {
+  accessor: string;
+  label: string;
+  type?: string;
+}
+
+interface CustomTableProps {
+  apiUrl: string;
+  columns: Column[];
+  searchKey: string;
+}
+
+const CustomTable: React.FC<CustomTableProps> = ({ apiUrl, columns, searchKey }) => {
+  const [data, setData] = useState<any[]>([]); // Datos originales
+  const [filteredData, setFilteredData] = useState<any[]>([]); // Datos filtrados
   const [loading, setLoading] = useState(true); // Estado de carga
-  const [searchTerm, setSearchTerm] = useState(''); // Estado para el término de búsqueda
-  const [currentPage, setCurrentPage] = useState(1); // Estado para la página actual
+  const [searchTerm, setSearchTerm] = useState(''); // Término de búsqueda
+  const [currentPage, setCurrentPage] = useState(1); // Página actual
   const [itemsPerPage] = useState(5); // Items por página
 
-  // Función para obtener los datos de la API
+  // Obtener los datos de la API
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(apiUrl); // Petición a la API
-        console.log('Datos obtenidos:', response.data); // Verificar datos obtenidos
+        const response = await axios.get(apiUrl);
+        console.log('Datos obtenidos:', response.data);
         setData(response.data);
         setFilteredData(response.data);
       } catch (error) {
@@ -35,17 +47,17 @@ const CustomTable = ({ apiUrl, columns, searchKey }) => {
       );
       setFilteredData(filtered);
     } else {
-      setFilteredData(data); // Si no hay término de búsqueda, mostrar todos los datos
+      setFilteredData(data);
     }
   }, [searchTerm, data, searchKey]);
 
-  // Obtener los elementos actuales para la paginación
+  // Cálculo de paginación
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
 
   // Cambiar de página
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   if (loading) {
     return (
@@ -90,7 +102,12 @@ const CustomTable = ({ apiUrl, columns, searchKey }) => {
               {columns.map((col) => (
                 <td key={col.accessor} className="border px-4 py-2">
                   {col.type === 'link' ? (
-                    <a href={item[col.accessor]} target="_blank" rel="noopener noreferrer" className="text-blue-600">
+                    <a
+                      href={item[col.accessor]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600"
+                    >
                       Ver
                     </a>
                   ) : (

@@ -1,14 +1,22 @@
 import { Client } from '@opensearch-project/opensearch';
-import config from '../../../getopensearch/config';
-
 
 const client = new Client({
-  node: config.opensearch.node,
-  auth: config.opensearch.auth,
-  ssl: config.opensearch.ssl,
+  node: process.env.OPENSEARCH_NODE,
+  auth: {
+    username: process.env.OPENSEARCH_USER,
+    password: process.env.OPENSEARCH_PASSWORD,
+  },
+  ssl: {
+    rejectUnauthorized: false, // Cambia esto si tu servidor tiene certificados válidos
+  },
 });
 
 export default async function handler(req, res) {
+  // Verificar si las variables de entorno están definidas
+  if (!process.env.OPENSEARCH_NODE || !process.env.OPENSEARCH_USER || !process.env.OPENSEARCH_PASSWORD) {
+    return res.status(500).json({ error: 'Missing OpenSearch environment variables' });
+  }
+
   const { indexName } = req.query;
 
   if (!indexName) {

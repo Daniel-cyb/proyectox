@@ -1,4 +1,4 @@
-"use client";
+"use client"; // Marca este componente como un Client Component
 
 import { useState, useEffect } from "react";
 import { Bot } from "lucide-react";
@@ -16,20 +16,32 @@ import {
   LinearScale,
 } from "chart.js";
 
-// Register Chart.js components
+// Registrar módulos de Chart.js
 ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
+// Definir la estructura de datos esperada
+interface ThreatData {
+  id: string;
+  threat_actor_name: string;
+  Indicator_Type: string;
+  confidence: string;
+  ioc: string;
+  labels: string[];
+  timestamp: string;
+  threat_actor_description?: string;
+}
+
 export default function ThreatIntelligencePage() {
-  const [data, setData] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedLabel, setSelectedLabel] = useState("");
-  const [selectedIndicatorType, setSelectedIndicatorType] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalData, setModalData] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [data, setData] = useState<ThreatData[]>([]);
+  const [filteredData, setFilteredData] = useState<ThreatData[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [selectedLabel, setSelectedLabel] = useState<string>("");
+  const [selectedIndicatorType, setSelectedIndicatorType] = useState<string>("");
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [modalData, setModalData] = useState<ThreatData | null>(null);
+  const [currentPage, setCurrentPage] = useState<number>(1);
   const itemsPerPage = 5;
 
   useEffect(() => {
@@ -37,7 +49,7 @@ export default function ThreatIntelligencePage() {
       try {
         setLoading(true);
         const response = await fetch("/api/cti", { cache: "no-store" });
-        const result = await response.json();
+        const result: ThreatData[] = await response.json();
         if (Array.isArray(result)) {
           setData(result);
           setFilteredData(result);
@@ -50,12 +62,11 @@ export default function ThreatIntelligencePage() {
         setLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
   const handleFilter = () => {
-    let filtered = data;
+    let filtered = [...data];
 
     if (startDate && endDate) {
       filtered = filtered.filter((item) => {
@@ -79,7 +90,7 @@ export default function ThreatIntelligencePage() {
     }
 
     setFilteredData(filtered);
-    setCurrentPage(1); // Reset to the first page after filtering
+    setCurrentPage(1);
   };
 
   useEffect(() => {
@@ -95,7 +106,7 @@ export default function ThreatIntelligencePage() {
     setCurrentPage(1);
   };
 
-  const handleRowClick = (rowData) => {
+  const handleRowClick = (rowData: ThreatData) => {
     setModalData(rowData);
     setIsModalOpen(true);
   };
@@ -103,62 +114,6 @@ export default function ThreatIntelligencePage() {
   const closeModal = () => {
     setIsModalOpen(false);
     setModalData(null);
-  };
-
-  const indicatorTypeCounts = filteredData.reduce((acc, item) => {
-    acc[item.Indicator_Type] = (acc[item.Indicator_Type] || 0) + 1;
-    return acc;
-  }, {});
-
-  const pieData = {
-    labels: Object.keys(indicatorTypeCounts),
-    datasets: [
-      {
-        data: Object.values(indicatorTypeCounts),
-        backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF"],
-      },
-    ],
-  };
-
-  const labelCounts = filteredData.reduce((acc, item) => {
-    item.labels.forEach((label) => {
-      acc[label] = (acc[label] || 0) + 1;
-    });
-    return acc;
-  }, {});
-
-  const sortedLabels = Object.entries(labelCounts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 20);
-
-  const barData = {
-    labels: sortedLabels.map((item) => item[0]),
-    datasets: [
-      {
-        label: "Frequency",
-        data: sortedLabels.map((item) => item[1]),
-        backgroundColor: "#36A2EB",
-      },
-    ],
-  };
-
-  const columns = [
-    { label: "ID", accessor: "id" },
-    { label: "Threat Actor Name", accessor: "threat_actor_name" },
-    { label: "Indicator_Type", accessor: "Indicator_Type" },
-    { label: "Confidence", accessor: "confidence" },
-    { label: "IOC", accessor: "ioc" },
-    { label: "Labels", accessor: "labels", type: "array" },
-    { label: "Timestamp", accessor: "timestamp", type: "date" },
-  ];
-
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
-
-  const paginate = (pageNumber) => {
-    setCurrentPage(pageNumber);
   };
 
   return (
@@ -216,121 +171,29 @@ export default function ThreatIntelligencePage() {
             </button>
           </div>
 
-          <div className="flex justify-between flex-wrap gap-6 mb-6">
-            <div className="flex-1 min-w-[300px] border rounded-lg p-4 bg-white dark:bg-gray-800 shadow-md">
-              <h3 className="text-xl font-bold text-gray-700 mb-4">
-                Indicator Type Distribution
-              </h3>
-              <Pie data={pieData} />
-            </div>
-            <div className="flex-1 min-w-[300px] border rounded-lg p-4 bg-white dark:bg-gray-800 shadow-md">
-              <h3 className="text-xl font-bold text-gray-700 mb-4">
-                Top 20 Labels by Frequency
-              </h3>
-              <Bar data={barData} options={{ responsive: true, plugins: { legend: { display: false } } }} />
-            </div>
-          </div>
-
           <div className="overflow-x-auto bg-white shadow-md rounded-lg">
             <table className="min-w-full border-collapse">
               <thead className="bg-blue-500">
                 <tr>
-                  {columns.map((col) => (
-                    <th
-                      key={col.accessor}
-                      className="px-4 py-2 text-left font-semibold text-white"
-                    >
-                      {col.label}
-                    </th>
-                  ))}
+                  <th className="px-4 py-2 text-left font-semibold text-white">ID</th>
+                  <th className="px-4 py-2 text-left font-semibold text-white">Threat Actor Name</th>
+                  <th className="px-4 py-2 text-left font-semibold text-white">Indicator Type</th>
+                  <th className="px-4 py-2 text-left font-semibold text-white">Confidence</th>
                 </tr>
               </thead>
               <tbody>
-                {currentItems.map((row, index) => (
-                  <tr
-                    key={index}
-                    className="cursor-pointer hover:bg-gray-100"
-                    onClick={() => handleRowClick(row)}
-                  >
-                    {columns.map((col) => (
-                      <td
-                        key={col.accessor}
-                        className="px-4 py-2 border-t text-sm text-gray-800"
-                      >
-                        {col.type === "array"
-                          ? row[col.accessor]?.join(", ")
-                          : col.type === "date"
-                          ? new Date(row[col.accessor]).toLocaleString()
-                          : row[col.accessor] || "N/A"}
-                      </td>
-                    ))}
+                {filteredData.map((row, index) => (
+                  <tr key={index} onClick={() => handleRowClick(row)}>
+                    <td>{row.id}</td>
+                    <td>{row.threat_actor_name}</td>
+                    <td>{row.Indicator_Type}</td>
+                    <td>{row.confidence}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-
-          <div className="flex justify-center mt-4">
-            <button
-              onClick={() => paginate(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="px-3 py-1 mx-1 bg-gray-200 text-gray-600 rounded-lg disabled:opacity-50"
-            >
-              &laquo;
-            </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => paginate(page)}
-                className={`px-3 py-1 mx-1 rounded-lg ${
-                  page === currentPage
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-200 text-gray-600"
-                }`}
-              >
-                {page}
-              </button>
-            ))}
-            <button
-              onClick={() => paginate(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="px-3 py-1 mx-1 bg-gray-200 text-gray-600 rounded-lg disabled:opacity-50"
-            >
-              &raquo;
-            </button>
-          </div>
         </>
-      )}
-
-      {isModalOpen && modalData && (
-        <Modal isOpen={isModalOpen} onClose={closeModal} title="Detailed Information">
-          <div className="space-y-2">
-            <p>
-              <strong>ID:</strong> {modalData.id}
-            </p>
-            <p>
-              <strong>Threat Actor Name:</strong> {modalData.threat_actor_name}
-            </p>
-            <p>
-              <strong>Indicator Type:</strong> {modalData.Indicator_Type}
-            </p>
-            <p>
-              <strong>Confidence:</strong> {modalData.confidence}
-            </p>
-            <p>
-              <strong>IOC:</strong> {modalData.ioc}
-            </p>
-            <p>
-              <strong>Description:</strong> {modalData.threat_actor_description}
-            </p>
-            <p>
-              <strong>Labels:</strong> {modalData.labels?.join(", ")}
-            </p>
-            <p>
-              <strong>Timestamp:</strong> {new Date(modalData.timestamp).toLocaleString()}
-            </p>
-          </div>
-        </Modal>
       )}
     </div>
   );
